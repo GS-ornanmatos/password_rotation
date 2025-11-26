@@ -1,12 +1,15 @@
 const _SEC_RDP = "WyJVc2VyQHtIT1NUfSM3OCIsIkFjY2VzcyN7SE9TVH0hMDQiLCJEZXNrJHtIT1NUfSY5MiIsIlJlbW90ZUB7SE9TVH0jMTEiLCJSZHAje0hPU1R9ITMzIiwiQ2xpZW50JHtIT1NUfSY1NiIsIlNlc3Npb25Ae0hPU1R9Izg4IiwiTmV0IHtIT1NUfSExMSIsIkxpbmskR2F0ZUB7SE9TVH0jNjciXQ==";
 const _SEC_ADM = "WyJSb290QHtIT1NUfSNNYXN0ZXIiLCJTZWN1cmUje0hPU1R9IU9uZSIsIlBvd2VyJHtIT1NUfSZBZG0iLCJQcmltZUB7SE9TVH0jU3lzIiwiQm9zcyN7SE9TVH0hTW9kZSIsIlN1cGVyJHtIT1NUfSZVc2VyIiwiS2V5QHtIT1NUfSNBZG1pbiIsIlVsdHJhIHtIT1NUfSFDb3JlIiwiTWVnYSR7SE9TVH0mUm9vdCIsIkFscGhhQHtIT1NUfSNBY2Nlc3MiXQ==";
 
-let SENHAS_RDP, SENHAS_ADMIN;
+let SENHAS_RDP = [];
+let SENHAS_ADMIN = [];
+
 try {
   SENHAS_RDP = JSON.parse(atob(_SEC_RDP));
   SENHAS_ADMIN = JSON.parse(atob(_SEC_ADM));
 } catch (e) {
-  SENHAS_RDP = []; SENHAS_ADMIN = [];
+  console.error("ERRO CRÍTICO: Falha ao decodificar as listas de senhas.", e);
+  alert("Erro interno: As listas de senhas estão corrompidas.");
 }
 
 function unixCksum(str) {
@@ -46,10 +49,13 @@ function unixCksum(str) {
   ];
 
   let crc = 0;
-  let length = str.length;
+
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  const length = bytes.length;
 
   for (let i = 0; i < length; i++) {
-    const byte = str.charCodeAt(i) & 0xFF;
+    const byte = bytes[i]; // Já é & 0xFF implicitamente por ser Uint8Array
     crc = (crc << 8) ^ crctab[((crc >>> 24) ^ byte) & 0xFF];
   }
 
@@ -73,42 +79,52 @@ function getDayOfYear() {
 
 
 function gerarSenhas() {
-  const inputHost = document.getElementById('hostname').value;
   const resultArea = document.getElementById('resultArea');
+  const inputField = document.getElementById('hostname');
 
-  if (!inputHost.trim()) {
-    alert("Por favor, digite o hostname.");
-    return;
+  try {
+    const inputHost = inputField.value;
+
+    if (!inputHost.trim()) {
+      alert("Por favor, digite o hostname.");
+      return;
+    }
+
+    if (!SENHAS_RDP || SENHAS_RDP.length === 0) {
+      throw new Error("Arrays de senha vazios.");
+    }
+
+    const hostClean = inputHost.toLowerCase().replace(/\s/g, '');
+    const hostSeed = unixCksum(hostClean);
+    const diaDoAno = getDayOfYear();
+    const indice = (diaDoAno + hostSeed) % 10;
+
+    let rdpTemplate = SENHAS_RDP[indice];
+    let adminTemplate = SENHAS_ADMIN[indice];
+
+    if (!rdpTemplate || !adminTemplate) {
+      throw new Error(`Índice inválido gerado: ${indice}`);
+    }
+
+    const finalRdp = rdpTemplate.replace("{HOST}", hostClean);
+    const finalAdmin = adminTemplate.replace("{HOST}", hostClean);
+
+    document.getElementById('outRdp').value = finalRdp;
+    document.getElementById('outAdmin').value = finalAdmin;
+
+    document.getElementById('outRdp').type = 'password';
+    document.getElementById('outAdmin').type = 'password';
+
+    const dataHoje = new Date().toLocaleDateString('pt-BR');
+    document.getElementById('debugInfo').innerHTML =
+      `ID: ${hostSeed} | IDX: ${indice} | Data: ${dataHoje}`;
+
+    resultArea.style.display = "block";
+
+  } catch (err) {
+    console.error(err);
+    alert("Ocorreu um erro ao processar este hostname. Verifique se ele contém caracteres válidos.");
   }
-
-  const hostClean = inputHost.toLowerCase().replace(/\s/g, '');
-
-  // Agora usando a função compatível com Linux
-  const hostSeed = unixCksum(hostClean);
-
-  const diaDoAno = getDayOfYear();
-
-  // Cálculo do índice
-  const indice = (diaDoAno + hostSeed) % 10;
-
-  // Substituição do Template
-  const finalRdp = SENHAS_RDP[indice].replace("{HOST}", hostClean);
-  const finalAdmin = SENHAS_ADMIN[indice].replace("{HOST}", hostClean);
-
-  // Preenche os campos
-  document.getElementById('outRdp').value = finalRdp;
-  document.getElementById('outAdmin').value = finalAdmin;
-
-  // Reset visual
-  document.getElementById('outRdp').type = 'password';
-  document.getElementById('outAdmin').type = 'password';
-
-  // Debug info
-  const dataHoje = new Date().toLocaleDateString('pt-BR');
-  document.getElementById('debugInfo').innerHTML =
-    `ID: ${hostSeed} | IDX: ${indice} | Data: ${dataHoje}`;
-
-  resultArea.style.display = "block";
 }
 
 function toggleView(fieldId) {
