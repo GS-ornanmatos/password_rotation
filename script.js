@@ -1,4 +1,4 @@
-const _SEC_RDP = "WyJVc2VyQHtIT1NUfSM3OCIsIkFjY2VzcyN7SE9TVH0hMDQiLCJEZXNrJHtIT1NUfSY5MiIsIlJlbW90ZUB7SE9TVH0jMTEiLCJSZHAje0hPU1R9ITMzIiwiQ2xpZW50JHtIT1NUfSY1NiIsIlNlc3Npb25Ae0hPU1R9Izg4IiwiTmV0IHtIT1NUfSExMSIsIkxpbmskR2F0ZUB7SE9TVH0jNjciXQ==";
+const _SEC_RDP = "WyJVc2VyQHtIT1NUfSM3OCIsIkFjY2VzcyN7SE9TVH0hMDQiLCJEZXNrJHtIT1NUfSY5MiIsIlJlbW90ZUB7SE9TVH0jMTEiLCJSZHAje0hPU1R9ITMzIiwiQ2xpZW50JHtIT1NUfSY1NiIsIlNlc3Npb25Ae0hPU1R9Izg4IiwiTmV0IHtIT1NUfSEyMSIsIkxpbmske0hPU1R9JjQzIiwiR2F0ZUB7SE9TVH0jNjciXQ==";
 const _SEC_ADM = "WyJSb290QHtIT1NUfSNNYXN0ZXIiLCJTZWN1cmUje0hPU1R9IU9uZSIsIlBvd2VyJHtIT1NUfSZBZG0iLCJQcmltZUB7SE9TVH0jU3lzIiwiQm9zcyN7SE9TVH0hTW9kZSIsIlN1cGVyJHtIT1NUfSZVc2VyIiwiS2V5QHtIT1NUfSNBZG1pbiIsIlVsdHJhIHtIT1NUfSFDb3JlIiwiTWVnYSR7SE9TVH0mUm9vdCIsIkFscGhhQHtIT1NUfSNBY2Nlc3MiXQ==";
 
 let SENHAS_RDP = [];
@@ -12,7 +12,9 @@ try {
   alert("Erro interno: As listas de senhas estão corrompidas.");
 }
 
+
 function unixCksum(str) {
+  // Tabela padrão do polinômio 0x04C11DB7
   const crctab = [
     0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
     0x2608edb8, 0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61, 0x350c9b64, 0x31cd86d3, 0x3c8ea00a, 0x384fbdbd,
@@ -49,13 +51,10 @@ function unixCksum(str) {
   ];
 
   let crc = 0;
-
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(str);
-  const length = bytes.length;
+  const length = str.length;
 
   for (let i = 0; i < length; i++) {
-    const byte = bytes[i]; // Já é & 0xFF implicitamente por ser Uint8Array
+    const byte = str.charCodeAt(i) & 0xFF;
     crc = (crc << 8) ^ crctab[((crc >>> 24) ^ byte) & 0xFF];
   }
 
@@ -83,47 +82,53 @@ function gerarSenhas() {
   const inputField = document.getElementById('hostname');
 
   try {
-    const inputHost = inputField.value;
+    const rawInput = inputField.value || "";
 
-    if (!inputHost.trim()) {
+    // Sanitização idêntica ao Bash: tr '[:upper:]' '[:lower:]' | tr -d ' '
+    const hostClean = rawInput.toLowerCase().replace(/\s/g, '');
+
+    if (!hostClean) {
       alert("Por favor, digite o hostname.");
       return;
     }
 
-    if (!SENHAS_RDP || SENHAS_RDP.length === 0) {
+    if (!SENHAS_RDP.length || !SENHAS_ADMIN.length) {
       throw new Error("Arrays de senha vazios.");
     }
 
-    const hostClean = inputHost.toLowerCase().replace(/\s/g, '');
     const hostSeed = unixCksum(hostClean);
     const diaDoAno = getDayOfYear();
+
+    // Cálculo do índice (0 a 9)
     const indice = (diaDoAno + hostSeed) % 10;
 
     let rdpTemplate = SENHAS_RDP[indice];
     let adminTemplate = SENHAS_ADMIN[indice];
 
     if (!rdpTemplate || !adminTemplate) {
-      throw new Error(`Índice inválido gerado: ${indice}`);
+      throw new Error(`Índice inválido: ${indice}`);
     }
 
-    const finalRdp = rdpTemplate.replace("{HOST}", hostClean);
-    const finalAdmin = adminTemplate.replace("{HOST}", hostClean);
+    // Replace Global para garantir substituição correta
+    const finalRdp = rdpTemplate.replace(/{HOST}/g, hostClean);
+    const finalAdmin = adminTemplate.replace(/{HOST}/g, hostClean);
 
     document.getElementById('outRdp').value = finalRdp;
     document.getElementById('outAdmin').value = finalAdmin;
 
+    // Reseta visualização
     document.getElementById('outRdp').type = 'password';
     document.getElementById('outAdmin').type = 'password';
 
     const dataHoje = new Date().toLocaleDateString('pt-BR');
     document.getElementById('debugInfo').innerHTML =
-      `ID: ${hostSeed} | IDX: ${indice} | Data: ${dataHoje}`;
+      `SEED: ${hostSeed} | IDX: ${indice} | Data: ${dataHoje}`;
 
     resultArea.style.display = "block";
 
   } catch (err) {
     console.error(err);
-    alert("Ocorreu um erro ao processar este hostname. Verifique se ele contém caracteres válidos.");
+    alert("Ocorreu um erro ao processar: " + err.message);
   }
 }
 
