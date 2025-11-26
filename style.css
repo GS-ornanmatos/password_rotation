@@ -1,0 +1,173 @@
+:root {
+  --bg-color: #1a1a1a;
+  --card-color: #2d2d2d;
+  --text-color: #e0e0e0;
+  --accent-color: #4CAF50;
+  --secondary-color: #03A9F4;
+  --input-bg: #404040;
+  --border-radius: 8px;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background-color: var(--card-color);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+}
+
+h2 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
+h4 {
+  color: #888;
+  font-weight: normal;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Estilo do Input Principal (Hostname) */
+input.main-input {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--input-bg);
+  border: 1px solid #555;
+  color: white;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+input.main-input:focus {
+  border-color: var(--accent-color);
+}
+
+button.generate-btn {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button.generate-btn:hover {
+  background-color: #45a049;
+}
+
+button.generate-btn:active {
+  transform: scale(0.98);
+}
+
+/* Área de Resultados */
+.result-area {
+  margin-top: 25px;
+  display: none;
+  text-align: left;
+  border-top: 1px solid #444;
+  padding-top: 20px;
+}
+
+.password-container {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.pass-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 5px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Grupo do Input de Senha + Botões */
+.pass-input-group {
+  display: flex;
+  background-color: #333;
+  border-radius: var(--border-radius);
+  border: 1px solid #555;
+  overflow: hidden;
+}
+
+.pass-field {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+/* Botões de Ação (Olho e Copiar) */
+.action-btn {
+  background: #444;
+  border: none;
+  border-left: 1px solid #555;
+  color: #ddd;
+  cursor: pointer;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.action-btn:hover {
+  background: #555;
+}
+
+.action-btn:active {
+  background: #666;
+}
+
+.rdp-group {
+  border-left: 4px solid var(--secondary-color);
+}
+
+.admin-group {
+  border-left: 4px solid var(--accent-color);
+}
+
+.meta-info {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 15px;
+  text-align: center;
+}
