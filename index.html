@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Senhas GiuSoft</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Decodificador GiuSoft</h2>
+    <h4>Host Checksum + Rotação Diária</h4>
+
+    <div class="input-group">
+      <label for="hostname">HOSTNAME DO ALVO</label>
+      <input type="text" id="hostname" class="main-input" placeholder="Ex: SRV-APP-01" autocomplete="off">
+    </div>
+
+    <button class="generate-btn" onclick="gerarSenhas()">GERAR CÓDIGOS</button>
+
+    <div id="resultArea" class="result-area">
+
+      <div class="password-container">
+        <span class="pass-label">Acesso Remoto (RDP/User)</span>
+        <div class="pass-input-group rdp-group">
+          <input type="password" id="outRdp" class="pass-field" readonly value="">
+
+          <button class="action-btn" onclick="toggleView('outRdp')" title="Ver Senha">
+            👁️
+          </button>
+          <button class="action-btn" onclick="copyToClipboard('outRdp')" title="Copiar">
+            📋
+          </button>
+        </div>
+      </div>
+
+      <div class="password-container">
+        <span class="pass-label">Administrador (Root/Admin)</span>
+        <div class="pass-input-group admin-group">
+          <input type="password" id="outAdmin" class="pass-field" readonly value="">
+
+          <button class="action-btn" onclick="toggleView('outAdmin')" title="Ver Senha">
+            👁️
+          </button>
+          <button class="action-btn" onclick="copyToClipboard('outAdmin')" title="Copiar">
+            📋
+          </button>
+        </div>
+      </div>
+
+      <div class="meta-info" id="debugInfo"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
